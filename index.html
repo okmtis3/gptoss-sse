@@ -1,0 +1,26 @@
+<!doctype html>
+<meta charset="utf-8" />
+<button id="go">Ask</button>
+<pre id="out"></pre>
+<script>
+document.getElementById('go').onclick = async () => {
+  const out = document.getElementById('out');
+  out.textContent = "";
+  const res = await fetch("http://127.0.0.1:8000/chat", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      messages: [{role: "user", content: "東京の現在の天気を華氏で。"}],
+      tool_choice: "required",
+      temperature: 0.1
+    })
+  });
+  const reader = res.body.getReader();
+  const dec = new TextDecoder();
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    out.textContent += dec.decode(value);
+  }
+};
+</script>
