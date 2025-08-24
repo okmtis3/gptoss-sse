@@ -2,12 +2,13 @@ from __future__ import annotations
 import json
 from typing import Any, Dict, List, Optional, Generator
 
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Request, Response, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
 from pydantic import BaseModel, Field
 
 from openai import OpenAI
+from rag_query import answer as rag_answer
 
 # ====== 設定 ======
 OLLAMA_BASE_URL = "http://localhost:11434/v1"  # OllamaのOpenAI互換API
@@ -208,3 +209,13 @@ async def chat(req: ChatRequest):
 @app.get("/")
 def root():
     return JSONResponse({"message": "POST /chat (SSE). curl例はREADME参照。"})
+
+@app.post("/rag")
+def rag(query: str = Body(..., embed=True)):
+    """
+    入力: { "query": "..." }
+    出力: { "answer": "..." }
+    """
+    out = rag_answer(query)
+    return {"answer": out}
+
